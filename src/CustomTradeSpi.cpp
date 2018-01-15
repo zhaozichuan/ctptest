@@ -99,7 +99,9 @@ void CustomTradeSpi::OnRspSettlementInfoConfirm(
 		std::cout << "确认日期： " << pSettlementInfoConfirm->ConfirmDate << std::endl;
 		std::cout << "确认时间： " << pSettlementInfoConfirm->ConfirmTime << std::endl;
 		// 请求查询合约
-		reqQueryInstrument();
+		reqQueryInstrument();   //zzc delete
+	// 请求查询投资者资金账户
+	//	reqQueryTradingAccount(); //zz
 	}
 }
 
@@ -111,17 +113,30 @@ void CustomTradeSpi::OnRspQryInstrument(
 {
 	if (!isErrorRspInfo(pRspInfo))
 	{
+	
+		if (pInstrument == NULL){
+			std::cout << "error" << std::endl;
+			return;
+		}
+	
 		std::cout << "=====查询合约结果成功=====" << std::endl;
 		std::cout << "交易所代码： " << pInstrument->ExchangeID << std::endl;
 		std::cout << "合约代码： " << pInstrument->InstrumentID << std::endl;
+		std::cout << "合约名称： " << pInstrument->InstrumentName << std::endl;
 		std::cout << "合约在交易所的代码： " << pInstrument->ExchangeInstID << std::endl;
 		std::cout << "执行价： " << pInstrument->StrikePrice << std::endl;
 		std::cout << "到期日： " << pInstrument->EndDelivDate << std::endl;
 		std::cout << "当前交易状态： " << pInstrument->IsTrading << std::endl;
+		
 		// 请求查询投资者资金账户
 		reqQueryTradingAccount();
 	}
 }
+
+
+
+
+
 
 void CustomTradeSpi::OnRspQryTradingAccount(
 	CThostFtdcTradingAccountField *pTradingAccount,
@@ -163,15 +178,19 @@ void CustomTradeSpi::OnRspQryInvestorPosition(
 			std::cout << "----->该合约未持仓" << std::endl;
 		
 		// 报单录入请求（这里是一部接口，此处是按顺序执行）
-		/*if (loginFlag)
-			reqOrderInsert();*/
+	//	if (loginFlag)
+	//		reqOrderInsert();
 		//if (loginFlag)
 		//	reqOrderInsertWithParams(g_pTradeInstrumentID, gLimitPrice, 1, gTradeDirection); // 自定义一笔交易
 
 		// 策略交易
+		/* zzc delete
 		std::cout << "=====开始进入策略交易=====" << std::endl;
 		while (loginFlag)
 			StrategyCheckAndTrade(g_pTradeInstrumentID, this);
+	
+	    */ //zzc delete end
+
 	}
 }
 
@@ -293,13 +312,38 @@ void CustomTradeSpi::reqQueryInstrument()
 	CThostFtdcQryInstrumentField instrumentReq;
 	memset(&instrumentReq, 0, sizeof(instrumentReq));
 	strcpy(instrumentReq.InstrumentID, g_pTradeInstrumentID);
-	static int requestID = 0; // 请求编号
+	static int requestID = 10; // 请求编号
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 有时候需要停顿一会才能查询成功
 	int rt = g_pTradeUserApi->ReqQryInstrument(&instrumentReq, requestID);
+
+	//int rt = g_pTradeUserApi->ReqQryInvestorPosition(&instrumentReq, requestID);
 	if (!rt)
 		std::cout << ">>>>>>发送合约查询请求成功" << std::endl;
 	else
 		std::cerr << "--->>>发送合约查询请求失败" << std::endl;
 }
+
+/*
+void CustomTradeSpi::reqQueryInvestorPosition()
+{
+	CThostFtdcQryInvestorPositionField InvestorPositionReq;
+	memset(&InvestorPositionReq, 0, sizeof(InvestorPositionReq));
+	strcpy(InvestorPositionReq.BrokerID, gBrokerID);
+	//strcpy(InvestorPositionReq.InstrumentID, g_pTradeInstrumentID);
+	strcpy(InvestorPositionReq.InstrumentID, "");
+	strcpy(InvestorPositionReq.InvestorID, gInvesterID);
+	static int requestID = 10; // 请求编号
+	std::this_thread::sleep_for(std::chrono::milliseconds(700)); // 有时候需要停顿一会才能查询成功
+	
+
+	int rt = g_pTradeUserApi->ReqQryInvestorPosition(&InvestorPositionReq, requestID);
+	if (!rt)
+		std::cout << ">>>>>>发送合约查询请求成功" << std::endl;
+	else
+		std::cerr << "--->>>发送合约查询请求失败" << std::endl;
+}
+*/
+
 
 void CustomTradeSpi::reqQueryTradingAccount()
 {
@@ -318,11 +362,13 @@ void CustomTradeSpi::reqQueryTradingAccount()
 
 void CustomTradeSpi::reqQueryInvestorPosition()
 {
+	std::cout << ">>>>>>reqQueryInvestorPosition()" << std::endl;
 	CThostFtdcQryInvestorPositionField postionReq;
 	memset(&postionReq, 0, sizeof(postionReq));
 	strcpy(postionReq.BrokerID, gBrokerID);
 	strcpy(postionReq.InvestorID, gInvesterID);
-	strcpy(postionReq.InstrumentID, g_pTradeInstrumentID);
+	//strcpy(postionReq.InstrumentID, g_pTradeInstrumentID);
+	strcpy(postionReq.InstrumentID, "");
 	static int requestID = 0; // 请求编号
 	std::this_thread::sleep_for(std::chrono::milliseconds(700)); // 有时候需要停顿一会才能查询成功
 	int rt = g_pTradeUserApi->ReqQryInvestorPosition(&postionReq, requestID);

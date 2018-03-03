@@ -47,7 +47,7 @@ int main()
 	strcpy(gInvesterID, "107953");
 	strcpy(gInvesterPassword, "7382788");
 
-	/*
+	
 	// 初始化行情线程
 	cout << "初始化行情..." << endl;
 	g_pMdUserApi = CThostFtdcMdApi::CreateFtdcMdApi();   // 创建行情实例
@@ -55,9 +55,9 @@ int main()
 	g_pMdUserApi->RegisterSpi(pMdUserSpi);               // 注册事件类
 	g_pMdUserApi->RegisterFront(gMdFrontAddr);           // 设置行情前置地址
 	g_pMdUserApi->Init();                                // 连接运行
-	*/
+	
 
-
+	/*
 	// 初始化交易线程
 	cout << "初始化交易..." << endl;
 	g_pTradeUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(); // 创建交易实例
@@ -69,21 +69,21 @@ int main()
 	g_pTradeUserApi->SubscribePrivateTopic(THOST_TERT_RESTART);   // 订阅私有流
 	g_pTradeUserApi->RegisterFront(gTradeFrontAddr);              // 设置交易前置地址
 	g_pTradeUserApi->Init();                                      // 连接运行
-
-
+	
 
 
 	g_pTradeUserApi->Join();
 	delete pTradeSpi;
 	g_pTradeUserApi->Release();
-	
-	// 转换本地k线数据
-	//TickToKlineHelper tickToKlineHelper;
-	//tickToKlineHelper.KLineFromLocalData("market_data.csv", "K_line_data.csv");
+	*/
+
+	//转换本地k线数据
+	TickToKlineHelper tickToKlineHelper;
+	tickToKlineHelper.KLineFromLocalData("market_data.csv", "K_line_data.csv");
 	
 	// 等到线程退出
-	//g_pMdUserApi->Join();
-	//delete pMdUserSpi;
+	g_pMdUserApi->Join();
+	delete pMdUserSpi;
 	g_pMdUserApi->Release();
 
 	getchar();

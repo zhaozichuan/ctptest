@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include "CustomMdSpi.h"
 #include "TickToKlineHelper.h"
-
+#include "MySQLManager.h" 
 // ---- 全局参数声明 ---- //
 extern CThostFtdcMdApi *g_pMdUserApi;            // 行情指针
 extern char gMdFrontAddr[];                      // 模拟行情前置地址
@@ -13,7 +13,7 @@ extern TThostFtdcPasswordType gInvesterPassword; // 投资者密码
 extern char *g_pInstrumentID[];                  // 行情合约代码列表，中、上、大、郑交易所各选一种
 extern int instrumentNum;                        // 行情合约订阅数量
 extern std::unordered_map<std::string, TickToKlineHelper> g_KlineHash; // k线存储表
-
+extern MySQLManager *mysql;            // 行情指针
 // ---- ctp_api回调函数 ---- //
 // 连接成功应答
 void CustomMdSpi::OnFrontConnected()
@@ -191,6 +191,56 @@ void CustomMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 	std::cout << "合约在交易所的代码： " << pDepthMarketData->ExchangeInstID << std::endl;
 	std::cout << "最新价： " << pDepthMarketData->LastPrice << std::endl;
 	std::cout << "数量： " << pDepthMarketData->Volume << std::endl;
+
+	
+	//********************************zzc add
+
+	
+	std::string sql = "insert into furtureHQ(TradingDay,ExchangeID,InstrumentID,LastPrice,Volume,";
+	sql.append("Turnover,OpenInterest,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,PreDelta ) values(\"")
+	   .append(pDepthMarketData->TradingDay).append("\",\"")
+	   .append(pDepthMarketData->ExchangeID).append("\",\"")
+	   .append(pDepthMarketData->InstrumentID).append("\",\"")
+	   .append(std::to_string(pDepthMarketData->LastPrice)).append("\",\"")
+		//.append(std::to_string(pDepthMarketData->Volume)).append("\",")
+		.append(std::to_string(pDepthMarketData->Volume)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->Turnover)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->OpenInterest)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->ClosePrice)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->SettlementPrice)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->UpperLimitPrice)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->LowerLimitPrice)).append("\",\"")
+		.append(std::to_string(pDepthMarketData->PreDelta))
+		//.append(std::to_string(pDepthMarketData->LastPrice)).append("\",\"")
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		.append("\")")
+		;
+	
+	cout << sql << endl;
+
+	mysql->insert(sql);
+	
+
+	
+	//printf("%d\n",mysql->runSQLCommand(sql));
+
+    //********************************zzc add end
+
+/*
 	// 如果只获取某一个合约行情，可以逐tick地存入文件或数据库
 	char filePath[100] = {'\0'};
 	sprintf(filePath, "%s_market_data.csv", pDepthMarketData->InstrumentID);
@@ -214,6 +264,9 @@ void CustomMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 	if (g_KlineHash.find(instrumentKey) == g_KlineHash.end())
 		g_KlineHash[instrumentKey] = TickToKlineHelper();
 	g_KlineHash[instrumentKey].KLineFromRealtimeData(pDepthMarketData);
+
+	*/
+
 
 
 	// 取消订阅行情

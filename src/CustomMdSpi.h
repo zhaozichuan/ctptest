@@ -49,5 +49,7 @@ public:
 
 	///Ñ¯¼ÛÍ¨Öª
 	void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp);
+
+	
 };
 

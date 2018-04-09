@@ -30,9 +30,6 @@
     <ClCompile Include="..\src\StrategyTrade.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Administrator\Desktop\MySQLManager.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\CustomMdSpi.h">
@@ -45,12 +42,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\StrategyTrade.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Administrator\Desktop\MySQLManager.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\mysql.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,0 +1,129 @@
+package models;
+
+import java.util.Date;
+
+import javax.persistence.*;
+
+import play.db.ebean.*;
+import play.data.format.Formats;
+import play.data.validation.*;
+
+/*
+ * 时分图数据
+ */
+@Entity
+@Table(name="time_line3")
+public class Time_line3 extends Model {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
+
+    @Constraints.Required
+    public String stkCode;
+
+    @Constraints.Required
+    public String stkName;
+    
+    public Date date;
+    @Constraints.Required
+    @Formats.DateTime(pattern="yyyy-MM-dd HH:mm:ss")
+    
+   // @Constraints.Required
+   // public String time;
+
+    public double price;
+
+    public double volume;
+
+    public double amount;
+    
+    public double money1;
+    
+    public double money2;
+    
+    public double money3;
+    
+    public double money4;
+    
+    
+    
+    
+    
+    public static Finder<Long, Time_line3> find = new Finder<Long, Time_line3>(Long.class, Time_line3.class);
+
+//	public void initValueFromLine(String line,String timeStamp) {
+//		//名称|最新|幅度|涨跌|昨收|开盘|最高|最低|均价|总手|总额|现手|换手|委比|委差|内盘|外盘|代码|卖一|买一|
+//		//		0:2.招商证券
+//		//		1:34.14
+//		//		2:6.89%
+//		//		3:2.20
+//		//		4:31.94
+//		//		5:32.24
+//		//		6:34.41
+//		//		7:31.56
+//		//		8:33.25
+//		//		9:238万
+//		//		10:79.30亿
+//		//		11:333
+//		//		12:4.96%
+//		//		13:7.42%
+//		//		14:577
+//		//		15:103.53万
+//		//		16:134.93万
+//		//		17:34.17
+//		//		18:34.15
+//		//		19:600999
+//		// 80.X14714|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|X14714| todo 兼容
+//		String[] items = line.split("\\|");
+//        /*
+//		for(int i=0;i<items.length;i++){
+//        	System.out.println(i+":"+items[i]);
+//        }
+//		//*/
+//        //String timsstamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+//        this.date = timeStamp.substring(0, 8);
+//        this.time = timeStamp.substring(8, 12);
+//        this.stkCode = items[19];
+//        try{
+//            this.stkName = items[0].substring(items[0].indexOf(".")+1);
+//        }catch(Exception e){
+//        	this.stkName = this.stkCode;
+//        }
+//        try{
+//            this.price = Float.parseFloat(items[1]);
+//        }catch(Exception e){
+//        	this.price = 0;
+//        }
+//        this.volume = paraseFloatWithChineseUnit(items[9]);
+//        this.amount = paraseFloatWithChineseUnit(items[10]);
+//		
+//	}
+	public static float paraseFloatWithChineseUnit(String string) {
+		try{
+			float ret = Float.parseFloat(string.substring(0, string.length()-1));//兼容性？
+			String unit = string.substring(string.length()-1, string.length());
+			if("万".equals(unit)){
+				ret *= 10000;
+			}
+			if("亿".equals(unit)){
+				ret *= 100000000;
+			}
+			return ret;
+		}catch(Exception e){
+			//System.out.println("paraseFloatWithChineseUnit:"+string);
+			//e.printStackTrace();
+			return 0;
+		}
+	}
+//	public String toString(){
+//		return stkCode+","+stkName+","+date+","+time+","+price+","+volume+","+amount;
+//		
+//	}
+
+}

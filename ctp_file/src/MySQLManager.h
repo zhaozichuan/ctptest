@@ -7,8 +7,7 @@
 
 #ifndef MYSQLMANAGER_H_    
 #define MYSQLMANAGER_H_     
-
-#include <mysql.h>    
+   
 
 #include <string>    
 #include <iostream>    
@@ -60,7 +59,7 @@ protected:
 private:    
         bool IsConnected;    
         vector< vector<string> > resultList;    
-        MYSQL mySQLClient;    
+            
         unsigned int DEFAULTPORT;    
         char * HOSTS;    
         char * USERNAME;    

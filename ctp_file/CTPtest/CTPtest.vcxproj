@@ -24,15 +24,12 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\StrategyTrade.cpp" />
     <ClCompile Include="..\src\TickToKlineHelper.cpp" />
-    <ClCompile Include="C:\Users\Administrator\Desktop\MySQLManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\CustomMdSpi.h" />
     <ClInclude Include="..\src\CustomTradeSpi.h" />
-    <ClInclude Include="..\src\mysql.h" />
     <ClInclude Include="..\src\StrategyTrade.h" />
     <ClInclude Include="..\src\TickToKlineHelper.h" />
-    <ClInclude Include="C:\Users\Administrator\Desktop\MySQLManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B6E4CF70-7540-45BB-9DBF-C49EAA6E32E8}</ProjectGuid>
@@ -96,12 +93,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\soft\mysql-connector-c-6.1.11-win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\soft\mysql-connector-c-6.1.11-win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

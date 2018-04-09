@@ -1,0 +1,37 @@
+New log file opened at Thu Feb 11 13:39:13 CST 2016 by 5056@iZ94dt93xhtZ
+Taking next connection to: 50118
+New client attempting to connect on port: 50119-50118
+  Address = /169.254.62.142:50118
+This client on port 50119 has uuid 1f9ad010-0a37-4baa-901b-78dfa55a5bc4 configName activator humanReadableName Activator protocolVersion 3 featureTags Vector()
+Connected Clients: activator-1f9ad010-0a37-4baa-901b-78dfa55a5bc4
+Taking next connection to: 50118
+New client attempting to connect on port: 50120-50118
+  Address = /169.254.62.142:50118
+Handshake exception on socket: 50120
+sbt.impl.ipc.HandshakeException: Unable to perform handshake
+	at sbt.impl.ipc.Peer.handshake(IPC.scala:46)
+	at sbt.impl.ipc.MultiClientServer.<init>(IPC.scala:150)
+	at sbt.server.SbtServerSocketHandler$$anon$1.run(SbtServerSocketHandler.scala:43)
+Caused by: java.net.SocketException: Software caused connection abort: recv failed
+	at java.net.SocketInputStream.socketRead0(Native Method)
+	at java.net.SocketInputStream.socketRead(Unknown Source)
+	at java.net.SocketInputStream.read(Unknown Source)
+	at java.net.SocketInputStream.read(Unknown Source)
+	at java.io.BufferedInputStream.fill(Unknown Source)
+	at java.io.BufferedInputStream.read(Unknown Source)
+	at java.io.DataInputStream.readInt(Unknown Source)
+	at sbt.impl.ipc.Peer.receive(IPC.scala:95)
+	at sbt.impl.ipc.Peer.handshake(IPC.scala:49)
+	... 2 more
+Taking next connection to: 50118
+New client attempting to connect on port: 50121-50118
+  Address = /169.254.62.142:50118
+This client on port 50121 has uuid a1bce29a-cc99-4de3-81f5-920d59be1c6e configName activator humanReadableName Activator protocolVersion 3 featureTags Vector()
+Connected Clients: activator-1f9ad010-0a37-4baa-901b-78dfa55a5bc4, activator-a1bce29a-cc99-4de3-81f5-920d59be1c6e
+Taking next connection to: 50118
+Checking to see if clients are empty...
+No non-daemon clients connected after 3 min. Shutting down.
+Server socket thread exiting.
+0 clients open, will close them...
+All client sockets have been closed.
+Closing the 5056@iZ94dt93xhtZ logs at Thu Feb 11 13:42:14 CST 2016, goodbye.

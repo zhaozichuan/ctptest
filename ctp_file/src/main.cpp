@@ -44,20 +44,20 @@ TThostFtdcPasswordType gInvesterPassword = "";                     // 投资者密码
 																   // 行情参数
 CThostFtdcMdApi *g_pMdUserApi = nullptr;                           // 行情指针
 char gMdFrontAddr[] = "tcp://ctp1-md9.citicsf.com:41213";               // 模拟行情前置地址
-char *g_pInstrumentID[] = { "i1809", "jm1805", "i1805", "j1805" }; // 行情合约代码列表，中、上、大、郑交易所各选一种
-
+//char *g_pInstrumentID[] = { "t1806,jm1806" }; // 行情合约代码列表，中、上、大、郑交易所各选一种
+char *g_pInstrumentID[] = { "T1806", "T1809", "i1805", "j1805" }; // 行情合约代码列表，中、上、大、郑交易所各选一种
 //char *g_pInstrumentID[] = { "600030", "600001", "600028", "600011" };
-int instrumentNum = 4;//strlen(g_pInstrumentID[]);                                             // 行情合约订阅数量
+int instrumentNum = 2;//strlen(g_pInstrumentID[]);                                             // 行情合约订阅数量
 unordered_map<string, TickToKlineHelper> g_KlineHash;              // 不同合约的k线存储表
 
 																   // 交易参数
 CThostFtdcTraderApi *g_pTradeUserApi = nullptr;                    // 交易指针
 char gTradeFrontAddr[] = "tcp://ctp1-front9.citicsf.com:41205";            // 模拟交易前置地址
-TThostFtdcInstrumentIDType g_pTradeInstrumentID = "j1805";        // 所交易的合约代码
+TThostFtdcInstrumentIDType g_pTradeInstrumentID = "T1806,T1809";        // 所交易的合约代码
 TThostFtdcDirectionType gTradeDirection = THOST_FTDC_D_Sell;       // 买卖方向
 TThostFtdcPriceType gLimitPrice = 22735;                           // 交易价格
 
-MySQLManager *mysql;            // 行情指针
+//MySQLManager *mysql;            // 行情指针
 
 
 
@@ -66,17 +66,7 @@ MySQLManager *mysql;            // 行情指针
 int main()
 {
 	
-	string hosts = "rm-uf65wbvomnp2mufa6o.mysql.rds.aliyuncs.com";
-	string name = "root";
-	string pass = "Zzc7382788";
-	string db = "playebean";
-	int port = 3306;
-	
-	MySQLManager mysql1(hosts, name, pass, db, port);
 
-	mysql1.initConnection();
-
-	mysql = &mysql1;
 	getchar();
 	// 账号密码
 	/*

@@ -1,0 +1,23 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+# Home page
+GET     /               controllers.Application.index()
+# CRUD Controllers and REST API
+#->     /                play.crud.Routes
+
+#down
+GET /downk                      controllers.Download.TestCUID_win.Test1()
+GET /downk2                      controllers.Download.TestCUID_win.Test2(stkCode:String)
+
+
+GET  /line              controllers.real.StockMarkets.stock_HQ_CharV2(stkCode:String,callback:String)
+# GET  /k_line            controllers.kline.StockMarketLines.KLineGo(mid:String,stkCode:String,kType:String,len:Integer,callback:String)
+GET  /kline2            controllers.kline.StockMarketLines.KLineGo(mid:String,stkCode:String,kType:String,len:Integer,callback:String)
+GET  /kline200         controllers.kline.StockMarketLines.KLineResource200(mid:String,stkCode:String,kType:String,len:Integer,callback:String)
+#GET  /kline_bak           controllers.kline.StockMarketLines2.KLineGo2(mid:String,stkCode:String,kType:String,callback:String)
+GET  /kline1           controllers.kline.StockMarketLines.KLineGo2(mid:String,stkCode:String,kType:String,len:Integer,callback:String)
+GET  /kline3            controllers.kline.StockMarketLines.KLineGo3(mid:String,stkCode:String,kType:String,len:Integer,callback:String)
+

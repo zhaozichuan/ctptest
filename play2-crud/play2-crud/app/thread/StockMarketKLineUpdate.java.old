@@ -1,0 +1,471 @@
+package thread;
+
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.ning.http.client.AsyncCompletionHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.Response;
+
+import controllers.StockMarkets;
+import akka.actor.UntypedActor;
+
+//import com.typesafe.plugin.RedisPlugin;
+
+import models.stock.pojo.HQ163;
+import models.stock.pojo.StockMarket;
+import play.Logger;
+import play.Play;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import utils.DateUtil;
+import utils.HqTransfor;
+import utils.StockMarketsParser;
+import utils.httpGetData;
+import utils.redis.RedisAPI;
+import utils.tools.WorkDayTools;
+import models.DailyStockMarket;
+import models.Stock;
+import models.StockMarketKLine;
+import models.StockMarketTimeLine;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TimerTask;
+
+public class StockMarketKLineUpdate extends TimerTask{
+//	private static Jedis j = RedisAPI.getPool().getResource();  
+	public static final String EMPTY = "";
+    public static final String KTYPE_DAY = "100";
+    public static final String KTYPE_WEEK = "200";
+    public static final String KTYPE_MONTH = "300";
+
+    public void run(){  
+
+	     System.out.println("StockMarketKLineUpdate");  
+	     try {
+	    	 onReceive();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}   
+	  // timer.cancel(); //Terminate the timer thread  
+           
+     }  
+	          
+    public void onReceive() throws Exception {
+    	if(WorkDayTools.isWorkEndDay(new Date())||WorkDayTools.isHoliday(new Date())){
+    		return;
+    	}
+    	
+    	 final ObjectMapper mapper = new ObjectMapper();
+     	  JsonNode node = mapper.readTree(RedisAPI.get("stocklist"));
+    	
+    	Logger.info("StockMarketKLineUpdateActor begin:"+new SimpleDateFormat("yyyyMMddHHmmss-SSS").format(new Date()));
+    	System.out.println("--->");
+    	for(int k=0 ;k< node.size();k++){
+    		try {
+    		
+    			updateDay_Redis(node.get(k).get("code").asText(),node.get(k).get("name").asText());
+    		
+    		} catch (Exception e) {
+				// TODO: handle exception
+			}
+    	//	updateDay(node.get(k).get("code").asText(),node.get(k).get("name").asText(),date);
+    	//	updateWeek(node.get(k).get("code").asText(),node.get(k).get("name").asText(),date);
+    	//	updateMonth(node.get(k).get("code").asText(),node.get(k).get("name").asText(),date);
+    	}
+    	Logger.info("StockMarketKLineUpdateActor end:"+new SimpleDateFormat("yyyyMMddHHmmss-SSS").format(new Date()));
+
+    }
+    
+    private void updateDay_Redis(String stkCode,String stkName) throws Exception {
+    	
+    	String stockCode1=StockMarkets.StockTransfer(stkCode);
+    	HqTransfor.HQ163 hq163=StockMarkets.GetOneHq(stockCode1);
+    	
+    	DailyStockMarket dkline = new DailyStockMarket();
+    	
+    	System.err.println("-->"+stkCode);
+    		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    		dkline.symbol = stkCode;
+    		//dkline.name stkName;
+    		dkline.name =stkName;
+			dkline.time = new Date();
+    		System.out.println("insert dailyK" + dkline.time);
+    		dkline.open =(float) hq163.open;
+    		dkline.close=(float)hq163.price;
+    		dkline.low =(float)hq163.low;
+    		dkline.high=(float)hq163.high;
+    		dkline.volume=(float)hq163.volume;
+    		dkline.amount=(float)hq163.turnover;
+    	
+    		dkline.save();
+    		System.out.println("update  daily_k Ok!");
+        
+       
+     	// 新增记录
+    	
+    
+    }   
+    
+    private void updateDay(String stkCode,String stkName,String date) throws Exception {
+        final ObjectMapper mapper = new ObjectMapper();
+        int STEP=1;
+        String data ="action=60&stockindex=1&MaxCount="+STEP+"&Grid=" + stkCode ;    
+    	String responseStr=httpGetData.getHttpDate(data, "http://42.121.107.194:7780/reqxml?");
+
+        try {
+                    JsonNode rootNode = mapper.readTree(responseStr);
+                    //System.out.println("---"+response.getResponseBody());
+                    ArrayNode node = (ArrayNode) rootNode.path("GRID0");
+                    node.remove(0); // Remove title row
+                    Iterator<JsonNode> elements = node.elements();
+                    JsonNode element;
+                    String field = "";
+                    
+                  //  StockMarketTimeLine stockMarketTimeLine;
+                    String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+                    while(elements.hasNext()){
+                        element = elements.next();
+                        field = element.textValue();
+                        try{
+                        	StockMarketKLineUpdate.initValueFromLine(field,timeStamp);
+                        }catch(Exception e){
+                        	System.out.println("read err"+field);
+                        	continue;
+                        	
+                        }
+                    }
+                    
+                  
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+    
+    public static int updateDay_txy(String stkCode,String stkName,String date){
+    	//System.out.println("s1b:"+sdf.format(new Date()));
+//    	List<StockMarketTimeLine> list = Ebean.find(StockMarketTimeLine.class).where().eq("stkCode", stkCode)
+//    			                                                                      .eq("date", date)
+//    			                                                                      .eq("time","1500")
+//    			                                                                      .findList();
+//
+//    	float open = (float) list.get(0).price;
+//    	float close = list.get(0).;
+//    	float high = 0;
+//    	float low = 0;
+//    	float volume = 0;
+//    	float amount = 0;
+    	
+    	// 0.7秒左右，最耗时，4*60=240条记录，尝试在stkCode上建立索引
+    	//System.out.println("s1b:"+sdf.format(new Date()));
+    	List<StockMarketTimeLine> list = Ebean.find(StockMarketTimeLine.class).where().eq("stkCode", stkCode).eq("date", date).findList();
+    	//System.out.println("s1e:"+sdf.format(new Date()));
+    	// 计算几乎不费时间
+    	float open = 0;
+    	float close = 0;
+    	float high = 0;
+    	float low = 0;
+    	float volume = 0;
+    	float amount = 0;
+    	String bTime = "2359";
+    	String eTime = "0000";
+    	StockMarketTimeLine each;
+    	for(int i=0;i<list.size();i++){
+    		each = list.get(i);
+    		if(bTime.compareTo(each.time)>0){
+    			bTime = each.time;
+    			open = (float) each.price;
+    		}
+    		if(eTime.compareTo(each.time)<0){
+    			eTime = each.time;
+        		close = (float) each.price;
+    		}
+    		high = (float) (high>each.price?high:each.price);
+    		if(i==0){
+    			low = (float) each.price;
+    		}
+    		low = (float) (low<each.price?low:each.price);
+    		volume += each.volume;
+    		amount += each.amount;
+    	}
+    	
+    	// 查询是否已有数据
+    	// 0.01秒左右
+    	//System.out.println("s2b:"+sdf.format(new Date()));
+    	List<StockMarketKLine> listDay = Ebean.find(StockMarketKLine.class).where().eq("stkCode", stkCode).eq("date", date).eq("kType", KTYPE_DAY).setMaxRows(1).findList();
+    	//System.out.println("s2e:"+sdf.format(new Date()));
+    	System.out.println("update  daily_k Ok!11");
+    	if(listDay!=null&&listDay.size()==1){
+        	//System.out.println("begin update:"+sdf.format(new Date()));
+        	// 已有数据，update
+        	// 毫秒级
+    		Ebean.createSqlUpdate("update k_line set open=:open,close=:close,high=:high,low=:low,volume=:volume,amount=:amount "
+        			+ "where id = :id")
+        	.setParameter("open", open)
+            .setParameter("close", close)
+            .setParameter("high", high)
+            .setParameter("low", low)
+            .setParameter("volume", volume)
+            .setParameter("amount", amount)
+            .setParameter("id", listDay.get(0).id)
+            .execute();
+        	//System.out.println("end update:"+sdf.format(new Date()));
+    		return 0;
+    	}
+    	//System.out.println("begin save:"+sdf.format(new Date()));
+    	// 新增记录
+    	// 毫秒级
+    	StockMarketKLine kLine = new StockMarketKLine();
+    	kLine.stkCode = stkCode;
+    	kLine.stkName = stkName;
+    	kLine.date = date;
+    	kLine.time = EMPTY;
+    	kLine.kType = KTYPE_DAY;
+    	kLine.open = open;
+    	kLine.close = close;
+    	kLine.high = high;
+    	kLine.low = low;
+    	kLine.volume = volume;
+    	kLine.amount = amount;
+    	kLine.save();
+    	//zzc add add his day databse;
+    	DailyStockMarket dkline = new DailyStockMarket();
+    	//System.out.println("end save:"+sdf.format(new Date()));
+    	
+    		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    		dkline.symbol = stkCode;
+    		//dkline.name stkName;
+    		dkline.name =stkName;
+    		try {
+				dkline.time = sdf.parse(date);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		System.out.println("insert dailyK" + dkline.time);
+    		dkline.open =open;
+    		dkline.close=close;
+    		dkline.low =low;
+    		dkline.high=high;
+    		dkline.amount=amount;
+    		dkline.volume=volume;
+    	
+    		dkline.save();
+    		System.out.println("update  daily_k Ok!22");
+    	//zzc add add his day databse;
+    	
+    	return 0;
+    }
+    public static int updateWeek(String stkCode,String stkName,String date){
+    	return StockMarketKLineUpdate.updateKLine(stkCode, stkName, date, KTYPE_WEEK);
+    }
+    public static int updateMonth(String stkCode,String stkName,String date){
+    	return StockMarketKLineUpdate.updateKLine(stkCode, stkName, date, KTYPE_MONTH);
+    }
+    public static int updateKLine(String stkCode,String stkName,String date,String kType){
+    	System.out.println("stkCode:"+stkCode+",kType:"+kType);
+    	String beginDate = date; 
+    	if(KTYPE_WEEK.equals(kType)){
+    		beginDate = DateUtil.getMonday(date);
+    	}
+    	if(KTYPE_MONTH.equals(kType)){
+    		beginDate = DateUtil.getFirstWorkDayOfMonth(date);
+    	}
+    	List<StockMarketKLine> listDay = Ebean.find(StockMarketKLine.class).where().eq("stkCode", stkCode).eq("kType", KTYPE_DAY).between("date", beginDate, date).findList();
+    	float open = 0;
+    	float close = 0;
+    	float high = 0;
+    	float low = 0;
+    	float volume = 0;
+    	float amount = 0;
+    	String bTime = date;
+    	String eTime = date;
+    	StockMarketKLine each;
+    	for(int i=0;i<listDay.size();i++){
+    		each = listDay.get(i);
+    		if(bTime.compareTo(each.date)>=0){
+    			bTime = each.date;
+    			open = each.open;
+    		}
+    		if(eTime.compareTo(each.date)<=0){
+    			eTime = each.date;
+        		close = each.close;
+    		}
+    		high = (high>each.high?high:each.high);
+    		if(i==0){
+    			low = each.low;
+    		}
+    		low = (low<each.low?low:each.low);
+    		volume += each.volume;
+    		amount += each.amount;
+    	}
+    	// 已有数据，update
+    	listDay = Ebean.find(StockMarketKLine.class).where().eq("stkCode", stkCode).eq("date", beginDate).eq("kType", kType).setMaxRows(1).findList();
+    	if(listDay!=null&&listDay.size()==1){
+    		Ebean.createSqlUpdate("update k_line set open=:open,close=:close,high=:high,low=:low,volume=:volume,amount=:amount "
+        			+ "where id = :id")
+            .setParameter("open", open)
+            .setParameter("close", close)
+            .setParameter("high", high)
+            .setParameter("low", low)
+            .setParameter("volume", volume)
+            .setParameter("amount", amount)
+            .setParameter("id", listDay.get(0).id)
+            .execute();
+    		//System.out.println("update"+listDay.get(0).toString());
+    		return 0;
+    	}
+    	// 新增记录
+//    	StockMarketKLine kLine = new StockMarketKLine();
+//    	
+//    	kLine.stkCode = stkCode;
+//    	kLine.stkName = stkName;
+//    	kLine.date = beginDate;
+//    	kLine.time = EMPTY;
+//    	kLine.kType = kType;
+//    	kLine.open = open;
+//    	kLine.close = close;
+//    	kLine.high = high;
+//    	kLine.low = low;
+//    	kLine.volume = volume;
+//    	kLine.amount = amount;
+//    	kLine.save();
+    	
+    	
+    	
+    	//dkline.
+    	//System.out.println("new");
+    	//System.out.println("date:"+kLine.date+",kType:"+kLine.kType);
+    	
+    		
+    		
+    	return 0;
+    }
+    
+    
+    
+    public static void initValueFromLine(String line,String timeStamp) {
+		//名称|最新|幅度|涨跌|昨收|开盘|最高|最低|均价|总手|总额|现手|换手|委比|委差|内盘|外盘|代码|卖一|买一|
+		//		0:2.招商证券
+		//		1:34.14
+		//		2:6.89%
+		//		3:2.20
+		//		4:31.94
+		//		5:32.24
+		//		6:34.41
+		//		7:31.56
+		//		8:33.25
+		//		9:238万
+		//		10:79.30亿
+		//		11:333
+		//		12:4.96%
+		//		13:7.42%
+		//		14:577
+		//		15:103.53万
+		//		16:134.93万
+		//		17:34.17
+		//		18:34.15
+		//		19:600999
+		// 80.X14714|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|X14714| todo 兼容
+		String[] items = line.split("\\|");
+        /*
+		for(int i=0;i<items.length;i++){
+        	System.out.println(i+":"+items[i]);
+        }
+		//*/
+        //String timsstamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+      //  kLine.date = timeStamp.substring(0, 8);
+      //  kLine.time = timeStamp.substring(8, 12);
+//       
+//		StockMarketKLine kLine = new StockMarketKLine();
+//		
+//		try{
+//        	kLine.stkName = items[0].substring(items[0].indexOf(".")+1);
+//        	kLine.stkCode = items[19];
+//        	kLine.date = timeStamp.substring(0, 8);;
+//        	kLine.time = EMPTY;
+//        	kLine.open = Float.parseFloat(items[1]);;
+//        	kLine.close = Float.parseFloat(items[4]);;
+//        	kLine.high = Float.parseFloat(items[5]);;
+//        	kLine.low = Float.parseFloat(items[6]);;
+//        	kLine.volume = paraseFloatWithChineseUnit(items[9]);;
+//        	kLine.amount =  paraseFloatWithChineseUnit(items[10]);
+//        	kLine.save();
+//        	
+//        }catch(Exception e){
+//        	kLine.stkName = kLine.stkCode;
+//        	
+//        }
+		
+		
+		
+		
+		
+		DailyStockMarket dkline = new DailyStockMarket();
+    	//System.out.println("end save:"+sdf.format(new Date()));
+    	
+    		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    		dkline.symbol = items[19];
+    		//dkline.name stkName;
+    		dkline.name =items[0].substring(items[0].indexOf(".")+1);;
+    		try {
+				dkline.time = sdf.parse(timeStamp.substring(0, 8));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		System.out.println("insert dailyK" + dkline.time);
+    		dkline.open =Float.parseFloat(items[5]);
+    		dkline.close=Float.parseFloat(items[1]);
+    		dkline.low =Float.parseFloat(items[4]);
+    		dkline.high=Float.parseFloat(items[6]);
+    		dkline.volume=paraseFloatWithChineseUnit(items[9]);
+    		dkline.volume=dkline.volume*100;
+    		dkline.amount=paraseFloatWithChineseUnit(items[10]);
+    	
+    		dkline.save();
+    		System.out.println("update  daily_k Ok!");
+        
+       
+     	// 新增记录
+    	
+    	
+    	
+    	
+   
+        
+        
+        
+        
+	}
+	public static float paraseFloatWithChineseUnit(String string) {
+		try{
+			float ret = Float.parseFloat(string.substring(0, string.length()-1));//兼容性？
+			String unit = string.substring(string.length()-1, string.length());
+			if("万".equals(unit)){
+				ret *= 10000;
+			}
+			if("亿".equals(unit)){
+				ret *= 100000000;
+			}
+			return ret;
+		}catch(Exception e){
+			//System.out.println("paraseFloatWithChineseUnit:"+string);
+			//e.printStackTrace();
+			return 0;
+		}
+	}
+
+    
+    
+    
+}

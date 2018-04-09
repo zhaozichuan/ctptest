@@ -1,7 +1,2 @@
-﻿  TickToKlineHelper.cpp
-  StrategyTrade.cpp
-  main.cpp
-  CustomTradeSpi.cpp
-  CustomMdSpi.cpp
-  正在生成代码...
-  CTPtest.vcxproj -> D:\Git\ctptest\ctp_sql\Debug\CTPtest.exe
+﻿  main.cpp
+  CTPtest.vcxproj -> D:\Git\ctptest\ctp_file\Debug\CTPtest.exe

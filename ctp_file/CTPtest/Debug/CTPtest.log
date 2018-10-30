@@ -1,2 +1,5 @@
-﻿  main.cpp
+﻿  TickToKlineHelper.cpp
+d:\git\ctptest\ctp_file\src\ticktoklinehelper.cpp(157): warning C4476: "sprintf": 格式说明符中的类型字段字符“k”未知
+d:\git\ctptest\ctp_file\src\ticktoklinehelper.cpp(157): warning C4474: sprintf: 格式字符串中传递的参数太多
+  d:\git\ctptest\ctp_file\src\ticktoklinehelper.cpp(157): note: 占位符和其参数预计 0 可变参数，但提供的却是 1 参数
   CTPtest.vcxproj -> D:\Git\ctptest\ctp_file\Debug\CTPtest.exe

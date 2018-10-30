@@ -5,9 +5,10 @@
 #include <algorithm>
 #include "CTP_API/ThostFtdcUserApiStruct.h"
 #include "TickToKlineHelper.h"
+#include <time.h>
 
 const int kDataLineNum = 2 * 60; // 1分钟k线所需行数(末尾不足一分钟的舍去了)
-
+      int lastMin =0;
 void TickToKlineHelper::KLineFromLocalData(const std::string &sFilePath, const std::string &dFilePath)
 {
 	// 先清理残留数据
@@ -87,18 +88,83 @@ void TickToKlineHelper::KLineFromRealtimeData(CThostFtdcDepthMarketDataField *pD
 {
 	m_priceVec.push_back(pDepthMarketData->LastPrice);
 	m_volumeVec.push_back(pDepthMarketData->Volume);
-	if (m_priceVec.size() == kDataLineNum)
-	{
-		KLineDataType k_line_data;
-		k_line_data.open_price = m_priceVec.front();
-		k_line_data.high_price = *std::max_element(m_priceVec.cbegin(), m_priceVec.cend());
-		k_line_data.low_price = *std::min_element(m_priceVec.cbegin(), m_priceVec.cend());
+
+	std::vector<double> min_priceVec; // 存储1分钟的价格
+	std::vector<int> min_volumeVec; // 存储1分钟的成交量
+
+	min_priceVec.push_back(pDepthMarketData->LastPrice);
+	min_volumeVec.push_back(pDepthMarketData->Volume);
+
+	/* //zzc add 一分钟内价格监控
+	time_t time_seconds = time(0);
+	struct tm now_time;
+	localtime_s(&now_time, &time_seconds);
+
+	//if(now_time.tm_sec-)
+
+	std::cout << m_priceVec.size() << std::endl;
+	double open_price = m_priceVec.front(); //开盘价
+	double high_price = *std::max_element(m_priceVec.cbegin(), m_priceVec.cend());
+	double low_price = *std::min_element(m_priceVec.cbegin(), m_priceVec.cend());
+	double close_price = m_priceVec.back();
+
+	std::cout << "一分钟开盘" << open_price << std::endl;
+	std::cout << "一分钟最高" << high_price << std::endl;
+	std::cout << "一分钟最低" << low_price << std::endl;
+	std::cout << "一分钟最后" << close_price << std::endl;
+
+	char filePath[100] = { '\0' };
+	sprintf(filePath, "%s_min.csv", pDepthMarketData->InstrumentID);
+	std::ofstream outFile;
+	outFile.open(filePath, std::ios::app); // 文件追加写入
+	outFile << pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << ","
+			<< close_price << ","
+			<< std::endl;
+	outFile.close();
+
+
+
+
+
+
+	*///zzc add end
+
+	//add 1 min  hq
+	time_t time_seconds = time(0);
+	struct tm now_time;
+	localtime_s(&now_time, &time_seconds);
+	//lastMin = now_time.tm_min;
+	
+	if (now_time.tm_min > lastMin) {
+	
+		lastMin = now_time.tm_min;
+		printf("---->%d\n", lastMin);
+	}else{
+	//add 1 min  hq end
+	//if (m_priceVec.size() == kDataLineNum){
+		KLineDataType k_line_data; 
+		k_line_data.open_price = min_priceVec.front();
+		k_line_data.high_price = *std::max_element(min_priceVec.cbegin(), min_priceVec.cend());
+		k_line_data.low_price = *std::min_element(min_priceVec.cbegin(), min_priceVec.cend());
 		k_line_data.close_price = m_priceVec.back();
 		// 成交量的真实的算法是当前区间最后一个成交量减去上去一个区间最后一个成交量
 		k_line_data.volume = m_volumeVec.back() - m_volumeVec.front();
+		k_line_data.date_time = time_seconds;
 		m_KLineDataArray.push_back(k_line_data); // 此处可以存到内存
 
-		m_priceVec.clear();
-		m_volumeVec.clear();
+
+		char filePath[100] = { '\0' };
+		sprintf(filePath, "%k_market_data.csv", pDepthMarketData->InstrumentID);
+		std::ofstream outFile;
+		outFile.open(filePath, std::ios::app); // 文件追加写入 
+		outFile << pDepthMarketData->InstrumentID << ","
+			    << pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << ","
+			    << k_line_data.close_price << "," << asctime(gmtime(&k_line_data.date_time))
+			    << std::endl;
+
+		min_priceVec.clear();
+		min_volumeVec.clear();
 	}
+
+
 }

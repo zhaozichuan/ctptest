@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-
+#include <time.h> 
 // k线数据结构
 struct KLineDataType
 {
@@ -12,6 +12,7 @@ struct KLineDataType
 	double low_price;    // 低
 	double close_price;  // 收
 	int volume;          // 量
+	time_t date_time;   //时间
 };
 
 class TickToKlineHelper

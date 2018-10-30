@@ -190,7 +190,7 @@ void CustomMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 	std::cout << "合约在交易所的代码： " << pDepthMarketData->ExchangeInstID << std::endl;
 	std::cout << "最新价： " << pDepthMarketData->LastPrice << std::endl;
 	std::cout << "数量： " << pDepthMarketData->Volume << std::endl;
-
+	std::cout << "最高价： " << pDepthMarketData->HighestPrice << std::endl;
 	
 	// 如果只获取某一个合约行情，可以逐tick地存入文件或数据库
 	char filePath[100] = {'\0'};
@@ -201,7 +201,8 @@ void CustomMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 		<< pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << "," 
 		<< pDepthMarketData->LastPrice << "," 
 		<< pDepthMarketData->Volume << ","
-		//<< pDepthMarketData->VoluCustomMdSpime << ","
+		//<< pDepthMarketData->VoluCustomMdSpime <<","
+		<< pDepthMarketData->HighestPrice << ","
 		<< pDepthMarketData->BidPrice1 << "," 
 		<< pDepthMarketData->BidVolume1 << "," 
 		<< pDepthMarketData->AskPrice1 << "," 
@@ -212,8 +213,9 @@ void CustomMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 
 	// 计算实时k线
 	std::string instrumentKey = std::string(pDepthMarketData->InstrumentID);
-	if (g_KlineHash.find(instrumentKey) == g_KlineHash.end())
+	if (g_KlineHash.find(instrumentKey) == g_KlineHash.end()) //第一次生成某合约对象
 		g_KlineHash[instrumentKey] = TickToKlineHelper();
+
 	g_KlineHash[instrumentKey].KLineFromRealtimeData(pDepthMarketData);
 
 	

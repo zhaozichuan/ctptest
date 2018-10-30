@@ -1,5 +1,7 @@
 ﻿  TickToKlineHelper.cpp
   StrategyTrade.cpp
+  MySQLManager.cpp
+d:\git\ctptest\ctp_sql\src\mysqlmanager.cpp(167): warning C4244: “=”: 从“my_ulonglong”转换到“int”，可能丢失数据
   main.cpp
   CustomTradeSpi.cpp
   CustomMdSpi.cpp

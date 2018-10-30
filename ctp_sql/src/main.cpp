@@ -6,6 +6,7 @@
 #include "CustomTradeSpi.h"
 #include "TickToKlineHelper.h"
 #include "MySQLManager.h" 
+#pragma comment(lib,"libmysql.lib")//连接MysQL需要的库  
 using namespace std;
 
 // 链接库

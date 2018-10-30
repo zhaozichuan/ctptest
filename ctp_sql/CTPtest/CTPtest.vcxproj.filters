@@ -30,7 +30,7 @@
     <ClCompile Include="..\src\StrategyTrade.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Administrator\Desktop\MySQLManager.cpp">
+    <ClCompile Include="..\src\MySQLManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,11 +47,16 @@
     <ClInclude Include="..\src\StrategyTrade.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Administrator\Desktop\MySQLManager.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\mysql.h">
+    <ClInclude Include="..\src\MySQLManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CTPtest.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
